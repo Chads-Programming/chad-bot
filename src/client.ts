@@ -1,7 +1,6 @@
 import {
   Client,
   Collection,
-  CommandInteraction,
   Events,
   GatewayIntentBits,
   REST,
@@ -9,6 +8,9 @@ import {
   Routes,
   SlashCommandBuilder,
 } from 'discord.js';
+import { ExtendedClient } from './types/extended-client.type';
+import { Command } from './types/command.type';
+import { interactionCreateEvent, memberAddEvent } from './events';
 
 interface ClientConfig {
   token: string;
@@ -17,21 +19,10 @@ interface ClientConfig {
 }
 
 
-export interface Command {
-  data: {
-    name: string;
-    description: string;
-  };
-  execute: (interaction: CommandInteraction) => Promise<void>;
-}
-
-interface ExtendedClient extends Client {
-  commands: Collection<string, Command>;
-}
 
 const discordClient = (config: ClientConfig) => {
   const client: ExtendedClient = new Client({
-    intents: [GatewayIntentBits.Guilds],
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
   }) as ExtendedClient;
 
 
@@ -50,12 +41,12 @@ const discordClient = (config: ClientConfig) => {
   const deployCommands = async () => {
     try {
       console.log(`Started refreshing ${commands.length} application (/) commands.`);
-  
+
       const data = await rest.put(
         Routes.applicationGuildCommands(config.clientId, config.guildId),
         { body: commands },
       ) as Array<unknown>;
-  
+
       console.log(`Successfully reloaded ${data.length} application (/) commands.`);
     } catch (error) {
       console.error(error);
@@ -80,37 +71,8 @@ const discordClient = (config: ClientConfig) => {
   };
 
   const listenInteractions = () => {
-    client.on(Events.InteractionCreate, async (interaction) => {
-      if (!interaction.isChatInputCommand()) return;
-
-      const interactionClient = interaction.client as ExtendedClient;
-
-      const command = interactionClient.commands.get(interaction.commandName);
-
-      if (!command) {
-        console.error(
-          `No command matching ${interaction.commandName} was found.`,
-        );
-        return;
-      }
-
-      try {
-        await command.execute(interaction);
-      } catch (error) {
-        console.error(error);
-        if (interaction.replied || interaction.deferred) {
-          await interaction.followUp({
-            content: 'There was an error while executing this command!',
-            ephemeral: true,
-          });
-        } else {
-          await interaction.reply({
-            content: 'There was an error while executing this command!',
-            ephemeral: true,
-          });
-        }
-      }
-    });
+    client.on(Events.InteractionCreate, interactionCreateEvent);
+    client.on(Events.GuildMemberAdd, memberAddEvent);
   };
 
   return {
