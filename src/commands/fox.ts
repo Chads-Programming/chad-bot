@@ -1,4 +1,4 @@
-import { Command } from '@/client';
+import type { Command } from '@/types/command.type';
 
 export default {
   data: {

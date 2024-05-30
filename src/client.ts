@@ -4,13 +4,13 @@ import {
   Events,
   GatewayIntentBits,
   REST,
-  RESTPostAPIChatInputApplicationCommandsJSONBody,
+  type RESTPostAPIChatInputApplicationCommandsJSONBody,
   Routes,
   SlashCommandBuilder,
 } from 'discord.js';
-import { ExtendedClient } from './types/extended-client.type';
-import { Command } from './types/command.type';
 import { interactionCreateEvent, memberAddEvent } from './events';
+import type { Command } from './types/command.type';
+import type { ExtendedClient } from './types/extended-client.type';
 
 interface ClientConfig {
   token: string;
@@ -18,13 +18,10 @@ interface ClientConfig {
   guildId: string;
 }
 
-
-
 const discordClient = (config: ClientConfig) => {
   const client: ExtendedClient = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
   }) as ExtendedClient;
-
 
   client.once(Events.ClientReady, (readyClient) => {
     console.log(`Ready! Logged in as ${readyClient.user.tag}`);
@@ -37,22 +34,24 @@ const discordClient = (config: ClientConfig) => {
   const rest = new REST().setToken(config.token);
   const commands: RESTPostAPIChatInputApplicationCommandsJSONBody[] = [];
 
-
   const deployCommands = async () => {
     try {
-      console.log(`Started refreshing ${commands.length} application (/) commands.`);
+      console.log(
+        `Started refreshing ${commands.length} application (/) commands.`,
+      );
 
-      const data = await rest.put(
+      const data = (await rest.put(
         Routes.applicationGuildCommands(config.clientId, config.guildId),
         { body: commands },
-      ) as Array<unknown>;
+      )) as Array<unknown>;
 
-      console.log(`Successfully reloaded ${data.length} application (/) commands.`);
+      console.log(
+        `Successfully reloaded ${data.length} application (/) commands.`,
+      );
     } catch (error) {
       console.error(error);
     }
-  }
-
+  };
 
   const registerSlashCommand = (command: Command) => {
     const { data, execute } = command;
@@ -78,9 +77,8 @@ const discordClient = (config: ClientConfig) => {
   return {
     listenInteractions,
     registerSlashCommand,
-    deployCommands
+    deployCommands,
   };
 };
 
-
-export default discordClient
+export default discordClient;
