@@ -2,12 +2,12 @@ import type { Command } from '@/types/command.type';
 
 export default {
   data: {
-    name: 'user',
-    description: 'Show user info',
+    name: 'fox',
+    description: 'Dar contexto sobre fox',
   },
   execute: async (interaction) => {
     await interaction.reply(
-      `This command was run by ${interaction.user.username}`,
+      `${interaction.user.username} por favor manten a tu novia lejos de fox`,
     );
   },
 } as Command;

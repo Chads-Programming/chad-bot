@@ -1,5 +1,7 @@
 import client from './client';
+import foxCommand from './commands/fox';
 import userCommand from './commands/user';
+
 import { envs } from './config/env';
 
 function bootstrap() {
@@ -10,6 +12,7 @@ function bootstrap() {
   });
 
   discordClient.registerSlashCommand(userCommand);
+  discordClient.registerSlashCommand(foxCommand);
 
   discordClient.listenInteractions();
   discordClient.deployCommands();

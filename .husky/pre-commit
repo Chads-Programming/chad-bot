@@ -1,0 +1,2 @@
+bun ts:check
+bun lint:check

@@ -1,2 +1,2 @@
-export * from './interaction-create.event'
-export * from './member-add.event'
+export * from './interaction-create.event';
+export * from './member-add.event';
